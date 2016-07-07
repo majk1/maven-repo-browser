@@ -1,0 +1,214 @@
+<html>
+<head>
+  <title>Maven repository browser</title>
+  <style type="text/css">
+    body {
+      font-size: 12px;
+    }
+
+    .content {
+      width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-top: 16px;
+      padding: 16px;
+
+      background-color: #F0F0F0;
+      border: 1px solid #B0B0B0;
+    }
+
+    .inner_content {
+      padding: 16px;
+      background-color: #FFFFFF;
+      border: 1px solid #B0B0B0;
+    }
+
+    h1 {
+      font-family: sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .collapse {
+      cursor: pointer;
+    }
+
+    .collapse + input {
+      display: none;
+    }
+
+    .collapse + input + div {
+      display: none;
+    }
+
+    .collapse + input:checked + div {
+      display: block;
+    }
+
+    .message {
+      font-size: 14px;
+      color: #CC2020;
+      border: 1px solid #A02020;
+      background-color: #FFC0C0;
+      padding: 8px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .form_table {
+      font-size: 10px;
+      border-spacing: 0;
+      border-collapse: collapse;
+    }
+
+    .form_table tr td {
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+
+    .form_table tr td:first-child {
+      text-align: right;
+    }
+
+    .detail {
+      font-size: 12px;
+      background-color: #F0F0F0;
+      border: 1px solid #B0B0B0;
+      padding: 0 16px 16px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="content">
+
+  <h1>Maven repository browser - (<%= repository.name %>)</h1>
+
+  <div class="inner_content" style="padding-bottom: 4px; margin-bottom: 4px; font-family: sans-serif">
+
+    <form method="get">
+      <label for="filter">Filter:</label>
+      <select id="filter" name="filter">
+        <option value="all"<%= filter_all_selected %>>All</option>
+        <option value="release"<%= filter_release_selected %>>Releases</option>
+        <option value="snapshot"<%= filter_snapshot_selected %>>Snapshots</option>
+      </select>
+      <label for="search">Search:</label>
+      <input id="search" name="search" type="text" value="<%= search_value %>"/>
+      <input name="do_filter" type="submit" value="Filter"/>
+
+      <div style="float: right">
+        <input name="reindex" type="submit" value="Reindex"/>
+        <input name="rescan" type="submit" value="Rescan"/>
+      </div>
+      <div style="clear: both"></div>
+    </form>
+
+  </div>
+
+  <table class="form_table">
+    <tr>
+      <td>Last scan:</td>
+      <td><%= repository.last_scan.strftime('%Y-%m-%d %H:%M:%S') %></td>
+    </tr>
+    <tr>
+      <td>Last index:</td>
+      <td><%= repository.last_index.strftime('%Y-%m-%d %H:%M:%S') %></td>
+    </tr>
+  </table>
+
+  <%
+    unless msg.nil?
+  %>
+
+      <div class="message"><%= msg %></div>
+
+  <%
+
+      msg = nil
+
+    end
+  %>
+
+  <script type="text/javascript">
+    var search = document.getElementById('search');
+
+    search.addEventListener("keyup", function (event) {
+      event.preventDefault();
+      if (event.keyCode == 13) {
+        filter();
+      }
+    });
+
+    search.focus();
+  </script>
+
+  <div class="inner_content" style="margin-top: 4px; font-size: 14px; font-family: sans-serif">
+
+    <%
+      id_counter = 1
+
+      artifacts.each { |artifact|
+        artifact.versions.each { |version_info|
+
+          if (filter != 'all') &&
+              (filter == 'snapshot' && version_info.type != MavenRepo::VersionType::SNAPSHOT) ||
+              (filter == 'release' && version_info.type != MavenRepo::VersionType::RELEASE)
+            next
+          end
+
+          unless search_value.nil?
+            long_name = artifact.group_id + ':' + artifact.artifact_id + ':' + version_info.version
+            unless long_name.downcase.include? search_value.downcase
+              next
+            end
+          end
+
+    %>
+            <div>
+              <label class="collapse" for="_<%= id_counter %>">&#x25B6;
+                <%= artifact.group_id %>:<strong><%= artifact.artifact_id %></strong>:<%= version_info.version %>
+              </label>
+              <input id="_<%= id_counter %>" type="checkbox"/>
+              <div class="detail">
+                <pre>
+&lt;repositories&gt;
+  &lt;repository&gt;
+    &lt;id&gt;<%= repository.id %>&lt;/id&gt;
+    &lt;name&gt;<%= repository.name %>&lt;/name&gt;
+    &lt;url&gt;<%= repository.url %>&lt;/url&gt;
+  &lt;/repository&gt;
+&lt;/repositories&gt;
+
+&lt;dependencies&gt;
+  &lt;dependency&gt;
+    &lt;groupId&gt;<strong><%= artifact.group_id %></strong>&lt;/groupId&gt;
+    &lt;artifactId&gt;<strong><%= artifact.artifact_id %></strong>&lt;/artifactId&gt;
+    &lt;version&gt;<strong><%= version_info.version %></strong>&lt;/version&gt;
+      &lt;/dependency&gt;
+&lt;/dependencies&gt;
+      </pre>
+                <a href="<%= repository.url + '/' + version_info.get_pom_file(artifact) %>"><%= version_info.get_file(artifact, nil, 'pom') %></a><br/>
+                <a href="<%= repository.url + '/' + version_info.get_jar_file(artifact) %>"><%= version_info.get_file(artifact) %></a><br/>
+                <a href="<%= repository.url + '/' + version_info.get_sources_jar_file(artifact) %>"><%= version_info.get_file(artifact, 'sources') %></a><br/>
+              </div>
+            </div>
+
+        <%
+
+          id_counter += 1
+
+          }
+          }
+        %>
+
+  </div>
+
+</div>
+
+</body>
+</html>

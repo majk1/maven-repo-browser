@@ -9,11 +9,16 @@ require_relative 'artifact_info'
 module MavenRepo
 
   class Repository
-    attr_reader :artifacts
+    attr_reader :artifacts, :url, :name, :id, :last_scan, :last_index, :local_path
 
-    def initialize(local_path)
+    def initialize(local_path, id, name, url)
       @local_path = local_path
+      @id = id
+      @name = name
+      @url = url
       @artifacts = Set.new
+      @last_scan = nil
+      @last_index = nil
     end
 
     def scan
@@ -21,6 +26,8 @@ module MavenRepo
       Dir[@local_path + '/**/maven-metadata.xml'].each do |dir|
         create_artifact_by_xml(File.open(dir))
       end
+      @last_index = File.mtime(@local_path + '/.index/timestamp')
+      @last_scan = Time.now
     end
 
     def print
@@ -39,13 +46,22 @@ module MavenRepo
       end
     end
 
+    def get_sorted_artifacts
+      sorted_artifacts = artifacts.to_a
+      sorted_artifacts.sort { |left, right|
+        l = left.group_id + ':' + left.artifact_id
+        r = right.group_id + ':' + right.artifact_id
+        l <=> r
+      }
+    end
+
     # @param [ArtifactInfo] artifact_info
     # @param [String] version
-    private def get_snapshot_metadata_xml_file(artifact_info, version)
+    def get_snapshot_metadata_xml_file(artifact_info, version)
       File.open(@local_path + '/' + artifact_info.get_path + '/' + version + '/maven-metadata.xml')
     end
 
-    private def create_artifact_by_xml(file)
+    def create_artifact_by_xml(file)
       xml = Nokogiri::XML(file)
       metadata = xml.at_xpath('//metadata')
       versions = metadata.at_xpath('//versioning/versions')
@@ -69,6 +85,9 @@ module MavenRepo
         @artifacts.add(artifact_info)
       end
     end
+
+    private :create_artifact_by_xml
+    private :get_snapshot_metadata_xml_file
 
   end
 
