@@ -66,7 +66,7 @@ module MavenRepo
       metadata = xml.at_xpath('//metadata')
       versions = metadata.at_xpath('//versioning/versions')
       unless versions.nil?
-        artifact_info = ArtifactInfo.new(metadata.at_xpath('//groupId').content, metadata.at_xpath('//artifactId').content)
+        artifact_info = ArtifactInfo.new(metadata.at_xpath('//groupId').content, metadata.at_xpath('//artifactId').content, file.mtime)
         is_release = !metadata.at_xpath('//versioning/release').nil?
 
         metadata.xpath('//versions/version').each do |version_element|

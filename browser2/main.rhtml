@@ -46,10 +46,11 @@
     }
 
     .message {
-      font-size: 14px;
-      color: #CC2020;
-      border: 1px solid #A02020;
-      background-color: #FFC0C0;
+      font-family: sans-serif;
+      font-size: 16px;
+      color: #008000;
+      border: 1px solid #60B060;
+      background-color: #C0FFC0;
       padding: 8px;
       margin-top: 8px;
       margin-bottom: 8px;
@@ -75,9 +76,15 @@
       font-size: 12px;
       background-color: #F0F0F0;
       border: 1px solid #B0B0B0;
-      padding: 0 16px 16px;
+      padding: 16px;
       margin-top: 4px;
       margin-bottom: 8px;
+    }
+
+    .xml {
+      border: 1px solid #B0B0B0;
+      padding: 4px 8px;
+      background-color: #FFFFFF;
     }
 
   </style>
@@ -92,7 +99,7 @@
 
     <form method="get">
       <label for="filter">Filter:</label>
-      <select id="filter" name="filter">
+      <select id="filter" name="filter" onchange="form.submit()">
         <option value="all"<%= filter_all_selected %>>All</option>
         <option value="release"<%= filter_release_selected %>>Releases</option>
         <option value="snapshot"<%= filter_snapshot_selected %>>Snapshots</option>
@@ -102,7 +109,6 @@
       <input name="do_filter" type="submit" value="Filter"/>
 
       <div style="float: right">
-        <input name="reindex" type="submit" value="Reindex"/>
         <input name="rescan" type="submit" value="Rescan"/>
       </div>
       <div style="clear: both"></div>
@@ -175,7 +181,8 @@
               </label>
               <input id="_<%= id_counter %>" type="checkbox"/>
               <div class="detail">
-                <pre>
+                Deploy time: <%= artifact.deploy_time.strftime('%Y-%m-%d %H:%M:%S') %><br/>
+                <pre class="xml">
 &lt;repositories&gt;
   &lt;repository&gt;
     &lt;id&gt;<%= repository.id %>&lt;/id&gt;
@@ -189,12 +196,21 @@
     &lt;groupId&gt;<strong><%= artifact.group_id %></strong>&lt;/groupId&gt;
     &lt;artifactId&gt;<strong><%= artifact.artifact_id %></strong>&lt;/artifactId&gt;
     &lt;version&gt;<strong><%= version_info.version %></strong>&lt;/version&gt;
-      &lt;/dependency&gt;
-&lt;/dependencies&gt;
-      </pre>
-                <a href="<%= repository.url + '/' + version_info.get_pom_file(artifact) %>"><%= version_info.get_file(artifact, nil, 'pom') %></a><br/>
-                <a href="<%= repository.url + '/' + version_info.get_jar_file(artifact) %>"><%= version_info.get_file(artifact) %></a><br/>
-                <a href="<%= repository.url + '/' + version_info.get_sources_jar_file(artifact) %>"><%= version_info.get_file(artifact, 'sources') %></a><br/>
+  &lt;/dependency&gt;
+&lt;/dependencies&gt;</pre>
+                Downloads:<br/>
+                <a href="<%= repository.url + '/' + version_info.get_pom_file(artifact) %>"><%= version_info.get_file(artifact, nil, 'pom') %></a>
+                <a href="<%= repository.url + '/' + version_info.get_pom_file(artifact) + '.md5' %>">md5</a>
+                <a href="<%= repository.url + '/' + version_info.get_pom_file(artifact) + '.sha1' %>">sha1</a>
+                <br/>
+                <a href="<%= repository.url + '/' + version_info.get_jar_file(artifact) %>"><%= version_info.get_file(artifact) %></a>
+                <a href="<%= repository.url + '/' + version_info.get_jar_file(artifact) + '.md5' %>">md5</a>
+                <a href="<%= repository.url + '/' + version_info.get_jar_file(artifact) + '.sha1' %>">sha1</a>
+                <br/>
+                <a href="<%= repository.url + '/' + version_info.get_sources_jar_file(artifact) %>"><%= version_info.get_file(artifact, 'sources') %></a>
+                <a href="<%= repository.url + '/' + version_info.get_sources_jar_file(artifact) + '.md5' %>">md5</a>
+                <a href="<%= repository.url + '/' + version_info.get_sources_jar_file(artifact) + '.sha1' %>">sha1</a>
+                <br/>
               </div>
             </div>
 
