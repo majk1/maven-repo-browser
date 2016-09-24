@@ -15,12 +15,6 @@ module Browser2
 
     def do_GET(req, res)
 
-      unless req.query["reindex"].nil?
-        exec "../index.sh #{$repository.local_path}"
-        $repository.scan
-        msg = 'Repository has been reindexed and rescanned'
-      end
-
       unless req.query["rescan"].nil?
         $repository.scan
         msg = 'Repository has been rescanned'
