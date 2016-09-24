@@ -181,7 +181,7 @@
               </label>
               <input id="_<%= id_counter %>" type="checkbox"/>
               <div class="detail">
-                Deploy time: <%= File.mtime(repository.local_path + '/' + version_info.get_jar_file(artifact)).strftime('%Y-%m-%d %H:%M:%S') %><br/>
+                Deploy time: <%= File.mtime(repository.local_path + '/' + version_info.get_pom_file(artifact)).strftime('%Y-%m-%d %H:%M:%S') %><br/>
                 <pre class="xml">
 &lt;repositories&gt;
   &lt;repository&gt;
@@ -203,14 +203,18 @@
                 <a href="<%= repository.url + '/' + version_info.get_pom_file(artifact) + '.md5' %>">md5</a>
                 <a href="<%= repository.url + '/' + version_info.get_pom_file(artifact) + '.sha1' %>">sha1</a>
                 <br/>
+                <% if File.exist? (repository.local_path + '/' + version_info.get_jar_file(artifact)) %>
                 <a href="<%= repository.url + '/' + version_info.get_jar_file(artifact) %>"><%= version_info.get_file(artifact) %></a>
                 <a href="<%= repository.url + '/' + version_info.get_jar_file(artifact) + '.md5' %>">md5</a>
                 <a href="<%= repository.url + '/' + version_info.get_jar_file(artifact) + '.sha1' %>">sha1</a>
                 <br/>
+                <% end %>
+                <% if File.exist? (repository.local_path + '/' + version_info.get_sources_jar_file(artifact)) %>
                 <a href="<%= repository.url + '/' + version_info.get_sources_jar_file(artifact) %>"><%= version_info.get_file(artifact, 'sources') %></a>
                 <a href="<%= repository.url + '/' + version_info.get_sources_jar_file(artifact) + '.md5' %>">md5</a>
                 <a href="<%= repository.url + '/' + version_info.get_sources_jar_file(artifact) + '.sha1' %>">sha1</a>
                 <br/>
+                <% end %>
               </div>
             </div>
 
