@@ -5,7 +5,7 @@ require_relative '../maven_repo/maven_repo'
 include MavenRepo
 include WEBrick
 
-module Browser2
+module Browser
 
   class MainServlet < HTTPServlet::AbstractServlet
 

@@ -3,11 +3,11 @@
 require 'webrick'
 require 'logger'
 require_relative 'maven_repo/maven_repo'
-require_relative 'browser2/main_servlet'
+require_relative 'browser/main_servlet'
 
 include WEBrick
 include MavenRepo
-include Browser2
+include Browser
 
 @host = 'localhost'
 @port = 9999

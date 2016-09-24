@@ -181,7 +181,7 @@
               </label>
               <input id="_<%= id_counter %>" type="checkbox"/>
               <div class="detail">
-                Deploy time: <%= artifact.deploy_time.strftime('%Y-%m-%d %H:%M:%S') %><br/>
+                Deploy time: <%= File.mtime(repository.local_path + '/' + version_info.get_jar_file(artifact)).strftime('%Y-%m-%d %H:%M:%S') %><br/>
                 <pre class="xml">
 &lt;repositories&gt;
   &lt;repository&gt;
