@@ -1,4 +1,3 @@
-
 require 'set'
 require 'nokogiri'
 
@@ -29,6 +28,48 @@ module MavenRepo
       @last_index = File.mtime(@local_path + '/.index/timestamp')
       @last_scan = Time.now
     end
+
+
+    # @param [String] archetype_cat_path
+    def generate_archetype_catalog(archetype_cat_path)
+      begin
+        archetype_catalog = File.open(archetype_cat_path, 'w')
+        archetype_catalog.write('<archetype-catalog xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-catalog/1.0.0 http://maven.apache.org/xsd/archetype-catalog-1.0.0.xsd"
+    xmlns="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-catalog/1.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <archetypes>
+')
+
+        Dir[@local_path + '/**/*.pom'].each do |pom|
+          pom_xml = Nokogiri::XML(File.open(pom));
+          project = pom_xml.at_xpath('//xmlns:project')
+          packaging = project.at_xpath('//xmlns:packaging')
+          if (!packaging.nil?) && (packaging.content == 'maven-archetype')
+            group_id = project.at_xpath('//xmlns:groupId').content
+            artifact_id = project.at_xpath('//xmlns:artifactId').content
+            version = project.at_xpath('//xmlns:version').content
+            name = project.at_xpath('//xmlns:name')
+            description = name.nil? ? '' : name.content
+
+            archetype_catalog.write("    <archetype>\n")
+            archetype_catalog.write("      <groupId>#{group_id}</groupId>\n")
+            archetype_catalog.write("      <artifactId>#{artifact_id}</artifactId>\n")
+            archetype_catalog.write("      <version>#{version}</version>\n")
+            archetype_catalog.write("      <description>#{description}</description>\n")
+            archetype_catalog.write("    </archetype>\n")
+          end
+        end
+
+        archetype_catalog.write('  </archetypes>
+</archetype-catalog>
+')
+      rescue IOError => e
+        STDERR.print "Error during writing archetype catalog xml into file: #{archetype_cat_path}"
+      ensure
+        archetype_catalog.close unless archetype_catalog.nil?
+      end
+    end
+
 
     def print
       STDERR.puts "artifact count: #{@artifacts.size}"
