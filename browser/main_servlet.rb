@@ -41,7 +41,7 @@ module Browser
 
       search_value = req.query['search']
 
-      File.open('browser2/main.rhtml', 'r') { |f|
+      File.open('browser/main.rhtml', 'r') { |f|
         @template = ERB.new(f.read)
       }
 
